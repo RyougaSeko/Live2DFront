@@ -1,0 +1,26 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.App {
+  min-height: 100vh;
+  background: url("https://userdisk.webry.biglobe.ne.jp/012/472/52/N000/000/000/129247956548116104261_BG43a.jpg")
+    center / cover;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.left-container {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.right-container {
+  height: 100vh;
+} 
