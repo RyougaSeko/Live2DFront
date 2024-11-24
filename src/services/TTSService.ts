@@ -1,10 +1,13 @@
 export class TTSService {
+  private baseUrl: string;
+  private apiKey: string;
+
   constructor() {
     this.baseUrl = 'http://tts-parakeet.westus2.cloudapp.azure.com/v1';
     this.apiKey = 'sk-1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLM'; // 実際のAPIキーに置き換えてください
   }
 
-  async generateSpeech(text, options = {}) {
+  async generateSpeech(text: string, options: any = {}) {
     try {
       const defaultOptions = {
         lang: 'ja',
@@ -35,7 +38,6 @@ export class TTSService {
         throw new Error(`HTTP error! status: ${response.status}, details: ${JSON.stringify(errorData)}`);
       }
 
-      // レスポンスをBlobとして取得
       const audioBlob = await response.blob();
       return URL.createObjectURL(audioBlob);
     } catch (error) {

@@ -1,15 +1,40 @@
 import { useState } from 'react';
+import { TTSService } from '../../services/TTSService';
 import './styles.css';
+
+const ttsService = new TTSService();
 
 const Chat = () => {
   const [messages, setMessages] = useState<string[]>([]);
   const [inputText, setInputText] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (inputText.trim()) {
-      setMessages([...messages, inputText]);
-      setInputText('');
+      try {
+        // TTSで音声を生成
+        const audioUrl = await ttsService.generateSpeech(inputText, {
+          lang: 'ja',
+          spk_id: 'female_tsukuyomi',
+          output_format: 'mp3',
+          stream: false
+        });
+
+        // Live2Dモデルに音声を送信
+        const live2dIframe = document.querySelector('.live2d-iframe') as HTMLIFrameElement;
+        if (live2dIframe && live2dIframe.contentWindow) {
+          live2dIframe.contentWindow.postMessage({
+            type: 'SPEAK',
+            audioUrl: audioUrl,
+            text: inputText
+          }, '*');
+        }
+
+        setMessages([...messages, inputText]);
+        setInputText('');
+      } catch (error) {
+        console.error('音声生成に失敗しました:', error);
+      }
     }
   };
 

@@ -9,9 +9,19 @@ async function initialize() {
     await live2dModel.initialize(document.getElementById('canvas'));
     
     const model = live2dModel.getModel();
-    if (model) {
-      new ModelControls(model);
-    }
+    const controls = new ModelControls(model);
+
+    // メッセージ受信のハンドラを追加
+    window.addEventListener('message', async (event) => {
+      if (event.data.type === 'SPEAK') {
+        try {
+          await controls.startTalking(event.data.text);
+        } catch (error) {
+          console.error('音声再生に失敗しました:', error);
+        }
+      }
+    });
+
   } catch (error) {
     console.error('初期化に失敗しました:', error);
   }
