@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Live2d</title>
-    <script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/live2d.min.js"></script>
+    <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/dylanNew/live2d/webgl/Live2D/lib/live2d.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pixi.js@7.x/dist/pixi.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/RaSan147/pixi-live2d-display@v0.5.0-ls-7/dist/index.min.js"></script>
     <style>
       html, body {
         height: 100%;
@@ -15,32 +18,164 @@
 
       body {
         display: flex;
-        justify-content: center;
-        align-items: flex-end;
+        flex-direction: column;
+        align-items: center;
         background: transparent;
       }
 
-      #live2d {
-        cursor: grab;
-        width: auto;
+      #canvas-container {
+        width: 100%;
+        height: 100vh;
+      }
+
+      canvas {
+        width: 100%;
         height: 100%;
       }
 
-      #live2d:active {
-        cursor: grabbing;
+      #live2d {
+        position: absolute;
+        width: 300px;
+        height: 500px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .controls {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 255, 255, 0.8);
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 1000;
+      }
+
+      .control-group {
+        margin: 5px 0;
       }
     </style>
   </head>
   <body>
-    <canvas id="live2d" width="800" height="1600"></canvas>
+    <div id="canvas-container">
+      <canvas id="canvas"></canvas>
+    </div>
+    
+    <div class="controls">
+      <div class="control-group">
+        <label for="mouthRange">口の開き具合: </label>
+        <input type="range" id="mouthRange" min="0" max="100" value="0">
+      </div>
+      <div class="control-group">
+        <button id="startTalkingBtn">会話開始</button>
+        <button id="stopTalkingBtn">会話停止</button>
+      </div>
+    </div>
+
     <script>
-      window.addEventListener("load", () => {
-        loadlive2d(
-          "live2d",
-          "https://cdn.jsdelivr.net/gh/evrstr/live2d-widget-models/live2d_evrstr/haru_seifuku/model.json",
-          null
-        );
+      window.PIXI = PIXI;
+      let live2DModel = null;
+      let talkingInterval = null;
+
+      // PIXI.jsアプリケーションの初期化を修正
+      const app = new PIXI.Application({
+        view: document.getElementById('canvas'),
+        transparent: true,
+        autoStart: true,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        resizeTo: window // ウィンドウサイズに追従
       });
+
+      // モデルの読み込みを修正
+      (async function loadModel() {
+        try {
+          // テスト用の別のモデルパスを試してみる
+          const modelPath = 'https://cdn.jsdelivr.net/gh/guansss/pixi-live2d-display/test/assets/haru/haru_greeter_t03.model3.json';
+          
+          live2DModel = await PIXI.live2d.Live2DModel.from(modelPath);
+          
+          // モデルのスケール調整
+          const scale = 0.2; // 必要に応じて調整
+          live2DModel.scale.set(scale);
+          
+          // モデルの位置設定
+          live2DModel.anchor.set(0.5, 0.5);
+          live2DModel.position.set(
+            app.screen.width / 2,
+            app.screen.height / 2
+          );
+          
+          app.stage.addChild(live2DModel);
+          
+          // デバッグ用：モデルが読み込まれたことを確認
+          console.log('モデルが読み込まれました:', live2DModel);
+          
+          // インタラクションの設定
+          live2DModel.on('hit', (hitAreas) => {
+            console.log('Hit areas:', hitAreas);
+          });
+        } catch (error) {
+          console.error('モデルの読み込みに失敗しました:', error);
+          console.error('エラーの詳細:', error.message);
+        }
+      })();
+
+      // ウィンドウリサイズ時の処理を追加
+      window.addEventListener('resize', () => {
+        if (live2DModel) {
+          live2DModel.position.set(
+            app.screen.width / 2,
+            app.screen.height / 2
+          );
+        }
+      });
+
+      // 会話アニメーション開始（lipsync対応版）
+      document.getElementById('startTalkingBtn').addEventListener('click', () => {
+        if (live2DModel) {
+          // 音声ファイルのURLを指定
+          const audioUrl = 'https://cdn.jsdelivr.net/gh/RaSan147/pixi-live2d-display@v1.0.3/playground/test.mp3';
+          
+          // lipsyncを開始
+          live2DModel.speak(audioUrl, {
+            volume: 1.0,
+            expression: null, // 必要に応じて表情インデックスを指定
+            crossOrigin: "anonymous",
+            onFinish: () => {
+              console.log("音声再生完了");
+            },
+            onError: (err) => {
+              console.error("エラー:", err);
+            }
+          });
+        }
+      });
+
+      // 会話アニメーション停止
+      document.getElementById('stopTalkingBtn').addEventListener('click', () => {
+        if (live2DModel) {
+          live2DModel.stopSpeaking();
+        }
+      });
+
+      // モーションとlipsyncを組み合わせる例
+      function playMotionWithVoice() {
+        if (live2DModel) {
+          const audioUrl = 'path/to/your/audio.mp3';
+          live2DModel.motion("idle", 0, 3, {
+            sound: audioUrl,
+            volume: 1.0,
+            expression: 0,
+            crossOrigin: "anonymous",
+            onFinish: () => {
+              console.log("モーションと音声再生完了");
+            }
+          });
+        }
+      }
     </script>
   </body>
 </html> 
