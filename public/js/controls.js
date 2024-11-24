@@ -10,8 +10,29 @@ export class ModelControls {
     // 初期位置の設定
     this.defaultYOffset = 400;
     
+    this.elements = {
+      scaleRange: document.getElementById('scaleRange'),
+      xPosRange: document.getElementById('xPosRange'),
+      yPosRange: document.getElementById('yPosRange'),
+      scaleValue: document.getElementById('scaleValue'),
+      xPosValue: document.getElementById('xPosValue'),
+      yPosValue: document.getElementById('yPosValue'),
+      mouthRange: document.getElementById('mouthRange'),
+      speakerSelect: document.getElementById('speakerSelect'),
+    };
+
+    if (!this.validateElements()) {
+      console.error('必要なDOM要素が見つかりませんでした');
+      return;
+    }
+
     this.initializeControls();
     this.setInitialPosition();
+  }
+
+  validateElements() {
+    const requiredElements = ['scaleRange', 'xPosRange', 'yPosRange', 'scaleValue', 'xPosValue', 'yPosValue'];
+    return requiredElements.every(elementId => this.elements[elementId] !== null);
   }
 
   setInitialPosition() {
@@ -33,35 +54,29 @@ export class ModelControls {
   }
 
   initializeControls() {
-    this.elements = {
-      scaleRange: document.getElementById('scaleRange'),
-      scaleValue: document.getElementById('scaleValue'),
-      xPosRange: document.getElementById('xPosRange'),
-      xPosValue: document.getElementById('xPosValue'),
-      yPosRange: document.getElementById('yPosRange'),
-      yPosValue: document.getElementById('yPosValue'),
-      mouthRange: document.getElementById('mouthRange'),
-      startTalkingBtn: document.getElementById('startTalkingBtn'),
-      stopTalkingBtn: document.getElementById('stopTalkingBtn')
-    };
-
     this.setupEventListeners();
   }
 
   setupEventListeners() {
     const { scaleRange, xPosRange, yPosRange } = this.elements;
 
-    scaleRange.addEventListener('input', (e) => {
-      const scale = parseFloat(e.target.value);
-      this.live2DModel.scale.set(scale);
-      this.elements.scaleValue.textContent = scale.toFixed(2);
-    });
+    if (scaleRange) {
+      scaleRange.addEventListener('input', (e) => {
+        const scale = parseFloat(e.target.value);
+        this.live2DModel.scale.set(scale);
+        this.elements.scaleValue.textContent = scale.toFixed(2);
+      });
+    }
 
-    xPosRange.addEventListener('input', () => this.updatePosition());
-    yPosRange.addEventListener('input', () => this.updatePosition());
+    if (xPosRange) {
+      xPosRange.addEventListener('input', () => this.updatePosition());
+    }
 
-    this.elements.startTalkingBtn.addEventListener('click', () => this.startTalking());
-    this.elements.stopTalkingBtn.addEventListener('click', () => this.stopTalking());
+    if (yPosRange) {
+      yPosRange.addEventListener('input', () => this.updatePosition());
+    }
+
+    this.elements.speakerSelect.addEventListener('change', () => this.changeSpeaker(this.elements.speakerSelect.value));
   }
 
   updatePosition() {
