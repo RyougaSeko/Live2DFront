@@ -3,6 +3,7 @@ export class Live2DModel {
     this.model = null;
     this.app = null;
     this.defaultScale = 0.35;
+    this.defaultYOffset = 400;
   }
 
   async initialize(canvas) {
@@ -33,7 +34,7 @@ export class Live2DModel {
       
       this.model.scale.set(this.defaultScale);
       this.model.anchor.set(0.5, 0.5);
-      this.updatePosition();
+      this.setDefaultPosition();
       
       this.app.stage.addChild(this.model);
       
@@ -48,17 +49,17 @@ export class Live2DModel {
     }
   }
 
-  updatePosition() {
+  setDefaultPosition() {
     if (this.model && this.app) {
       this.model.position.set(
         this.app.screen.width / 2,
-        (this.app.screen.height / 2) + 100
+        this.app.screen.height / 2 + this.defaultYOffset
       );
     }
   }
 
   setupEventListeners() {
-    window.addEventListener('resize', () => this.updatePosition());
+    window.addEventListener('resize', () => this.setDefaultPosition());
   }
 
   getModel() {
