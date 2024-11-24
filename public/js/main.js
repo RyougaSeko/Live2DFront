@@ -12,6 +12,16 @@ async function initialize() {
     
     model = live2dModel.getModel();
     const controls = new ModelControls(model);
+    
+    // Live2DControllerのインスタンス化を追加
+    const controller = new Live2DController(model);
+    
+    // ランダムなアニメーションを定期的に再生
+    setInterval(() => {
+      if (!controller.isWaving && !controller.isJumping) {
+        controller.playRandomAnimation();
+      }
+    }, 1000); // 10秒ごと
 
     // メッセージ受信のハンドラを追加
     window.addEventListener('message', async (event) => {
@@ -29,11 +39,15 @@ async function initialize() {
   }
 }
 
+// DOMContentLoadedイベントで初期化を実行
+document.addEventListener('DOMContentLoaded', initialize);
+
 class Live2DController {
   constructor(model) {
     this.model = model;
     this.isWaving = false;
     this.isJumping = false;
+    this.isAnimating = false;
     this.setupInteractions();
     this.setupEmotions();
   }
@@ -167,8 +181,12 @@ class Live2DController {
     const animations = [
       this.playIdleAnimation,
       this.playGreetingAnimation,
-      this.playJumpAnimation,
-      this.playDanceAnimation
+      // this.playJumpAnimation,
+      // this.playDanceAnimation,
+      // this.playPeekAnimation,
+      // this.playSpinAnimation,
+      // this.playWaveAnimation,
+      // this.playHeadTiltAnimation
     ];
     
     const randomAnimation = animations[Math.floor(Math.random() * animations.length)];
@@ -249,6 +267,75 @@ class Live2DController {
       repeat: 3,
       ease: 'power1.inOut'
     });
+  }
+
+
+  async playPeekAnimation() {
+    const timeline = gsap.timeline();
+    await this.model.expression('surprised');
+    
+    timeline.to(this.model.position, {
+      x: '-=10',
+      duration: 0.3,
+      ease: 'power2.out'
+    }).to(this.model.position, {
+      x: '+=50',
+      duration: 0.6,
+      ease: 'power1.inOut'
+    }).to(this.model.position, {
+      x: '-10',
+      duration: 0.3,
+      ease: 'power2.in'
+    });
+    
+    return timeline.play();
+  }
+
+
+  async playSpinAnimation() {
+    const timeline = gsap.timeline();
+    await this.model.expression('happy');
+    
+    timeline.to(this.model, {
+      rotation: Math.PI * 2,
+      duration: 1,
+      ease: 'power1.inOut'
+    });
+    
+    return timeline.play();
+  }
+
+
+  async playWaveAnimation() {
+    const timeline = gsap.timeline();
+    await this.model.expression('happy');
+    
+    timeline.to(this.model.position, {
+      y: '-=2',
+      duration: 3,
+      yoyo: true,
+      repeat: 3,
+      ease: 'power1.inOut'
+    });
+    
+    await this.model.motion('wave');
+    return timeline.play();
+  }
+
+
+  async playHeadTiltAnimation() {
+    const timeline = gsap.timeline();
+    await this.model.expression('surprised');
+    
+    timeline.to(this.model, {
+      rotation: Math.PI * 0.1,
+      duration: 3,
+      yoyo: true,
+      repeat: 1,
+      ease: 'power1.inOut'
+    });
+    
+    return timeline.play();
   }
 }
 
@@ -359,22 +446,22 @@ class Live2DAnimator {
     timeline.to(this.model.position, {
       x: '+='+moveDistance,
       y: '-=20',
-      duration: 0.25,
+      duration: 3,
       ease: 'power1.inOut'
     }).to(this.model.position, {
       x: '-='+moveDistance,
       y: '-=20',
-      duration: 0.25,
+      duration: 3,
       ease: 'power1.inOut'
     }).to(this.model.position, {
       x: '-='+moveDistance,
       y: '+=20',
-      duration: 0.25,
+      duration: 3,
       ease: 'power1.inOut'
     }).to(this.model.position, {
       x: '+='+moveDistance,
       y: '+=20',
-      duration: 0.25,
+      duration: 3,
       ease: 'power1.inOut'
     });
 
@@ -403,22 +490,4 @@ class Live2DAnimator {
     return timeline.play();
   }
 }
-
-await initialize();
-// モデルの読み込み後にコントローラーを初期化
-model.on('load', () => {
-  const controller = new Live2DController(model);
-});
-
-// モデルの読み込み後にアニメーターを初期化
-model.on('load', () => {
-  const animator = new Live2DAnimator(model);
-});
-
-// ランダムな間隔でアニメーションを再生
-setInterval(() => {
-  if (!this.isAnimating) {
-    this.playRandomAnimation();
-  }
-}, 10000); // 10秒ごと
 
