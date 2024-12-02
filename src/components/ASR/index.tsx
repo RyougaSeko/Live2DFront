@@ -98,7 +98,7 @@ const ASR: React.FC<ASRProps> = ({ onTranscriptionComplete }) => {
           if (!personDetectedTimeRef.current) {
             console.log('初回の人物検出 - 3秒カウント開始');
             personDetectedTimeRef.current = Date.now();
-          } else if (Date.now() - personDetectedTimeRef.current >= 3000) {
+          } else if (Date.now() - personDetectedTimeRef.current >= 2000) {
             console.log('3秒経過、初回の音声認識を開始します');
             startRecognition();
             setHasStartedOnce(true);
@@ -130,6 +130,16 @@ const ASR: React.FC<ASRProps> = ({ onTranscriptionComplete }) => {
   // startRecognition関数を修正
   const startRecognition = () => {
     if (!isRecognising) {
+      // 初回の音声認識開始時にAIが話しかける
+      if (!hasStartedOnce) {
+        const live2dIframe = document.querySelector('.live2d-iframe') as HTMLIFrameElement;
+        if (live2dIframe && live2dIframe.contentWindow) {
+          live2dIframe.contentWindow.postMessage({
+            type: 'SPEAK',
+            text: 'こんにちは。何か御用でしょうか？'
+          }, '*');
+        }
+      }
       recognizer.startContinuousRecognitionAsync();
       setIsRecognising(true);
     }
