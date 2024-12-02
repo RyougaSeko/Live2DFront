@@ -3,4 +3,5 @@ export interface Message {
   sender: 'user' | 'ai';
   timestamp: Date;
   imageUrls?: string[];
+  isHtml?: boolean;
 } 

@@ -159,4 +159,32 @@
   .message-image {
     max-width: 200px;
   }
+}
+
+/* テーブルのスタイル */
+.message-text table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+  background: white;
+}
+
+.message-text th,
+.message-text td {
+  padding: 8px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.message-text th {
+  background-color: #f5f5f5;
+}
+
+/* レスポンシブテーブル */
+@media (max-width: 768px) {
+  .message-text table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
 } 

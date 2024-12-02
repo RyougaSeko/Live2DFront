@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import DOMPurify from 'dompurify';
 import { TTSService } from '../../services/TTSService';
 import { Message } from '../../types/chat';
 import './styles.css';
@@ -20,9 +21,25 @@ const Chat = () => {
         };
 
         const aiMessage: Message = {
-          text: `「${inputText}」というメッセージを受け取りました。`,
+          text: inputText.includes('表') ? `
+            <table border="1">
+              <tr>
+                <th>項目</th>
+                <th>内容</th>
+              </tr>
+              <tr>
+                <td>場所</td>
+                <td>広野町役場</td>
+              </tr>
+              <tr>
+                <td>営業時間</td>
+                <td>8:30～17:15</td>
+              </tr>
+            </table>
+          ` : `「${inputText}」というメッセージを受け取りました。`,
           sender: 'ai',
           timestamp: new Date(),
+          isHtml: inputText.includes('表'),
           imageUrls: inputText.includes('広野町役場') ? [
             'https://www.town.hirono.fukushima.jp/_res/projects/default_project/_page_/001/002/284/floormap_1.jpg',
             'https://www.town.hirono.fukushima.jp/_res/projects/default_project/_page_/001/002/284/floormap_2.jpg',
@@ -30,7 +47,11 @@ const Chat = () => {
           ] : undefined
         };
 
-        const audioUrl = await ttsService.generateSpeech(aiMessage.text, {
+        const ttsText = aiMessage.isHtml ? 
+          aiMessage.text.replace(/<[^>]*>/g, '') : 
+          aiMessage.text;
+
+        const audioUrl = await ttsService.generateSpeech(ttsText, {
           lang: 'ja',
           spk_id: 'female_tsukuyomi',
           output_format: 'mp3',
@@ -42,7 +63,7 @@ const Chat = () => {
           live2dIframe.contentWindow.postMessage({
             type: 'SPEAK',
             audioUrl: audioUrl,
-            text: aiMessage.text
+            text: ttsText
           }, '*');
         }
 
@@ -54,6 +75,20 @@ const Chat = () => {
     }
   };
 
+  const renderMessageContent = (message: Message) => {
+    if (message.isHtml) {
+      return (
+        <div 
+          className="message-text"
+          dangerouslySetInnerHTML={{ 
+            __html: DOMPurify.sanitize(message.text) 
+          }} 
+        />
+      );
+    }
+    return <div className="message-text">{message.text}</div>;
+  };
+
   return (
     <div className="chat-container">
       <div className="chat-messages">
@@ -63,7 +98,7 @@ const Chat = () => {
             className={`message ${message.sender === 'user' ? 'user-message' : 'ai-message'}`}
           >
             <div className="message-content">
-              <div className="message-text">{message.text}</div>
+              {renderMessageContent(message)}
               {message.imageUrls && message.imageUrls.length > 0 && (
                 <div className="message-images-container">
                   <div className="message-images">
