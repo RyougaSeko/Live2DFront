@@ -3,6 +3,7 @@ import DOMPurify from 'dompurify';
 import { TTSService } from '../../services/TTSService';
 import { Message } from '../../types/chat';
 import './styles.css';
+import ASR from '../ASR/index';
 
 const ttsService = new TTSService();
 
@@ -39,7 +40,7 @@ const Chat = () => {
           ` : `「${inputText}」というメッセージを受け取りました。`,
           sender: 'ai',
           timestamp: new Date(),
-          isHtml: inputText.includes('表'),
+          isHtml: inputText.includes('票'),
           imageUrls: inputText.includes('広野町役場') ? [
             'https://www.town.hirono.fukushima.jp/_res/projects/default_project/_page_/001/002/284/floormap_1.jpg',
             'https://www.town.hirono.fukushima.jp/_res/projects/default_project/_page_/001/002/284/floormap_2.jpg',
@@ -130,6 +131,15 @@ const Chat = () => {
           className="chat-input"
         />
         <button type="submit" className="chat-submit">送信</button>
+        <ASR onTranscriptionComplete={(text) => {
+          setInputText((prevText) => {
+            if (prevText === '') {
+              return text;
+            } else {
+              return `${prevText} ${text}`;
+            }
+          });
+        }} />
       </form>
     </div>
   );

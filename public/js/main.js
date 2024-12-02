@@ -102,7 +102,7 @@ class Live2DController {
       emotionContainer.appendChild(button);
     });
     
-    document.body.appendChild(emotionContainer);
+    // document.body.appendChild(emotionContainer);
   }
 
 
