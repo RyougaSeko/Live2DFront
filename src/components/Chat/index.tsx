@@ -24,7 +24,9 @@ const Chat = () => {
         const aiMessage: Message = {
           text: `「${inputText}」というメッセージを受け取りました。`,
           sender: 'ai',
-          timestamp: new Date()
+          timestamp: new Date(),
+          imageUrl: inputText.includes('広野町役場の1階') ? 
+            'https://www.town.hirono.fukushima.jp/_res/projects/default_project/_page_/001/002/284/floormap_1.jpg' : undefined
         };
 
         // TTSで音声を生成
@@ -62,7 +64,16 @@ const Chat = () => {
             className={`message ${message.sender === 'user' ? 'user-message' : 'ai-message'}`}
           >
             <div className="message-content">
-              {message.text}
+              <div className="message-text">{message.text}</div>
+              {message.imageUrl && (
+                <div className="message-image">
+                  <img 
+                    src={message.imageUrl} 
+                    alt="AI generated"
+                    loading="lazy"
+                  />
+                </div>
+              )}
             </div>
             <div className="message-timestamp">
               {message.timestamp.toLocaleTimeString()}
