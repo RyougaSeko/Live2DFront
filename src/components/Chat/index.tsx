@@ -13,23 +13,23 @@ const Chat = () => {
     e.preventDefault();
     if (inputText.trim()) {
       try {
-        // ユーザーメッセージを追加
         const userMessage: Message = {
           text: inputText,
           sender: 'user',
           timestamp: new Date()
         };
 
-        // AIの応答メッセージ（仮）
         const aiMessage: Message = {
           text: `「${inputText}」というメッセージを受け取りました。`,
           sender: 'ai',
           timestamp: new Date(),
-          imageUrl: inputText.includes('広野町役場の1階') ? 
-            'https://www.town.hirono.fukushima.jp/_res/projects/default_project/_page_/001/002/284/floormap_1.jpg' : undefined
+          imageUrls: inputText.includes('広野町役場') ? [
+            'https://www.town.hirono.fukushima.jp/_res/projects/default_project/_page_/001/002/284/floormap_1.jpg',
+            'https://www.town.hirono.fukushima.jp/_res/projects/default_project/_page_/001/002/284/floormap_2.jpg',
+            'https://www.town.hirono.fukushima.jp/_res/projects/default_project/_page_/001/002/284/floormap_3.jpg'
+          ] : undefined
         };
 
-        // TTSで音声を生成
         const audioUrl = await ttsService.generateSpeech(aiMessage.text, {
           lang: 'ja',
           spk_id: 'female_tsukuyomi',
@@ -37,7 +37,6 @@ const Chat = () => {
           stream: false
         });
 
-        // Live2Dモデルに音声を送信
         const live2dIframe = document.querySelector('.live2d-iframe') as HTMLIFrameElement;
         if (live2dIframe && live2dIframe.contentWindow) {
           live2dIframe.contentWindow.postMessage({
@@ -65,13 +64,19 @@ const Chat = () => {
           >
             <div className="message-content">
               <div className="message-text">{message.text}</div>
-              {message.imageUrl && (
-                <div className="message-image">
-                  <img 
-                    src={message.imageUrl} 
-                    alt="AI generated"
-                    loading="lazy"
-                  />
+              {message.imageUrls && message.imageUrls.length > 0 && (
+                <div className="message-images-container">
+                  <div className="message-images">
+                    {message.imageUrls.map((url, imgIndex) => (
+                      <div key={imgIndex} className="message-image">
+                        <img 
+                          src={url} 
+                          alt={`AI generated ${imgIndex + 1}`}
+                          loading="lazy"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

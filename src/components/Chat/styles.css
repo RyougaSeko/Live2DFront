@@ -109,4 +109,54 @@
   .message.ai-message .message-content img {
     max-width: 100%;
   }
+}
+
+.message-images-container {
+  margin-top: 8px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.message-images {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 12px; /* スクロールバー用の余白 */
+  scrollbar-width: thin;
+  scrollbar-color: #4a90e2 transparent;
+}
+
+/* Webkit（Chrome, Safari）用のスクロールバースタイル */
+.message-images::-webkit-scrollbar {
+  height: 6px;
+}
+
+.message-images::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.message-images::-webkit-scrollbar-thumb {
+  background-color: #4a90e2;
+  border-radius: 3px;
+}
+
+.message-image {
+  flex: 0 0 auto;
+  max-width: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.message-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .message-image {
+    max-width: 200px;
+  }
 } 
