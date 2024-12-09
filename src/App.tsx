@@ -1,17 +1,20 @@
 import Live2D from './components/Live2D';
 import Chat from './components/Chat';
+import { Live2DProvider } from './contexts/Live2DContext';
 import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <div className="left-container">
-        <Live2D />
+    <Live2DProvider>
+      <div className="App">
+        <div className="left-container">
+          <Live2D />
+        </div>
+        <div className="right-container">
+          <Chat />
+        </div>
       </div>
-      <div className="right-container">
-        <Chat />
-      </div>
-    </div>
+    </Live2DProvider>
   );
 }
 

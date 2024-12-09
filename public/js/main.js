@@ -31,6 +31,12 @@ async function initialize() {
         } catch (error) {
           console.error('音声再生に失敗しました:', error);
         }
+      } else if (event.data.type === 'SPEAK_WITH_AUDIO') {
+        try {
+          await controls.lipSync.startSpeaking(event.data.audioUrl);
+        } catch (error) {
+          console.error('音声再生に失敗しました:', error);
+        }
       }
     });
 
@@ -132,7 +138,7 @@ class Live2DController {
     const duration = 500;
     const startY = this.model.position.y;
     
-    // ジャンプのアニメーション
+    // ��ャンプのアニメーション
     await new Promise(resolve => {
       gsap.to(this.model.position, {
         y: startY - jumpHeight,

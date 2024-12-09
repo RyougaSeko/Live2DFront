@@ -4,12 +4,14 @@ import { TTSService } from '../../services/TTSService';
 import { Message } from '../../types/chat';
 import './styles.css';
 import ASR from '../ASR/index';
+import { useLive2D } from '../../contexts/Live2DContext';
 
 const ttsService = new TTSService();
 
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
+  const { playRandomNews } = useLive2D();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +75,14 @@ const Chat = () => {
       } catch (error) {
         console.error('音声生成に失敗しました:', error);
       }
+    }
+  };
+
+  const handlePlayNews = async () => {
+    try {
+      await playRandomNews();
+    } catch (error) {
+      console.error('ニュースの再生に失敗しました:', error);
     }
   };
 
@@ -140,6 +150,9 @@ const Chat = () => {
             }
           });
         }} />
+        <button onClick={handlePlayNews}>
+          ニュースを読み上げる
+        </button>
       </form>
     </div>
   );

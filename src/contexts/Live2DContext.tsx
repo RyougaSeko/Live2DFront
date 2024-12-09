@@ -4,6 +4,8 @@ interface Live2DContextType {
   speak: (text: string) => Promise<void>;
   changeSpeaker: (speakerId: string) => void;
   currentSpeaker: string;
+  playRandomNews: () => Promise<void>;
+  setIframeRef: (ref: HTMLIFrameElement | null) => void;
 }
 
 interface Live2DProviderProps {
@@ -17,7 +19,11 @@ const Live2DContext = createContext<Live2DContextType | null>(null);
 
 export const Live2DProvider = ({ children }: Live2DProviderProps) => {
   const [currentSpeaker, setCurrentSpeaker] = useState('female_tsukuyomi');
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+
+  const setIframeRef = (ref: HTMLIFrameElement | null) => {
+    iframeRef.current = ref;
+  };
 
   const generateSpeech = async (text: string) => {
     try {
@@ -70,8 +76,46 @@ export const Live2DProvider = ({ children }: Live2DProviderProps) => {
     setCurrentSpeaker(speakerId);
   };
 
+  const playRandomNews = async () => {
+    try {
+      const response = await fetch('https://hironocho-api-d7b0dqgzcrc9e6du.japaneast-01.azurewebsites.net/random-news', {
+        method: 'GET',
+        headers: {
+          'Accept': 'audio/mp3'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      if (!iframeRef.current?.contentWindow) {
+        throw new Error('Live2Dモデルが見つかりません');
+      }
+
+      iframeRef.current.contentWindow.postMessage({
+        type: 'SPEAK_WITH_AUDIO',
+        audioUrl,
+        text: 'ニュースを読み上げています'
+      }, '*');
+
+    } catch (error) {
+      console.error('ニュースの再生に失敗しました:', error);
+      throw error;
+    }
+  };
+
   return (
-    <Live2DContext.Provider value={{ speak, changeSpeaker, currentSpeaker }}>
+    <Live2DContext.Provider value={{ 
+      speak, 
+      changeSpeaker, 
+      currentSpeaker,
+      playRandomNews,
+      setIframeRef
+    }}>
       {children}
     </Live2DContext.Provider>
   );
