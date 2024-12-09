@@ -1,14 +1,15 @@
 import { useRef } from 'react';
 import './styles.css';
+import { useLive2D } from '../../contexts/Live2DContext';
 
 const Live2D = () => {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const { setIframeRef } = useLive2D();
 
   return (
     <div className="live2d-container">
       <iframe
-        ref={iframeRef}
-        src="/live2d.html"  // publicフォルダに配置するHTML
+        ref={setIframeRef}
+        src="/live2d.html"
         className="live2d-iframe"
         title="Live2D Character"
         frameBorder="0"
