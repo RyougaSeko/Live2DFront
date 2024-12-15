@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useRef, ReactNode, useEffect } from 'react';
+import { usePersonDetection } from './PersonDetectionContext';
 
 interface Live2DContextType {
   speak: (text: string) => Promise<void>;
@@ -24,10 +25,15 @@ export const Live2DProvider = ({ children }: Live2DProviderProps) => {
   const [nextNewsTime, setNextNewsTime] = useState<Date | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const { shouldPlayNews } = usePersonDetection();
 
-  // 3分ごとにニュースを読み上げる
   useEffect(() => {
     const autoPlayNews = async () => {
+      if (!shouldPlayNews) {
+        console.log('人が検出されているため、ニュースを再生しません');
+        return;
+      }
+
       try {
         setIsPlaying(true);
         await playRandomNews();
@@ -35,7 +41,6 @@ export const Live2DProvider = ({ children }: Live2DProviderProps) => {
         console.error('自動ニュース再生に失敗しました:', error);
       } finally {
         setIsPlaying(false);
-        // 次の再生時刻を設定
         const next = new Date();
         next.setMinutes(next.getMinutes() + 3);
         setNextNewsTime(next);
@@ -43,14 +48,15 @@ export const Live2DProvider = ({ children }: Live2DProviderProps) => {
     };
 
     // 初回実行
-    autoPlayNews();
+    if (shouldPlayNews) {
+      autoPlayNews();
+    }
 
     // 3分ごとに実行
     const intervalId = setInterval(autoPlayNews, 3 * 60 * 1000);
 
-    // クリーンアップ
     return () => clearInterval(intervalId);
-  }, []);
+  }, [shouldPlayNews]);
 
   const setIframeRef = (ref: HTMLIFrameElement | null) => {
     iframeRef.current = ref;
@@ -142,7 +148,7 @@ export const Live2DProvider = ({ children }: Live2DProviderProps) => {
       }, '*');
 
     } catch (error) {
-      console.error('ニュースの再生に失敗しました:', error);
+      console.error('ニュー���の再生に失敗しました:', error);
       throw error;
     }
   };

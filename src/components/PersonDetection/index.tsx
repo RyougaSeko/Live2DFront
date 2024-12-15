@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import * as blazeface from '@tensorflow-models/blazeface';
+import { usePersonDetection } from '../../contexts/PersonDetectionContext';
 import './styles.css';
 
 const PersonDetection = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPersonPresent, setIsPersonPresent] = useState(false);
   const [model, setModel] = useState<blazeface.BlazeFaceModel | null>(null);
+  const { isPersonPresent, setIsPersonPresent } = usePersonDetection();
 
   useEffect(() => {
     const loadModel = async () => {
@@ -36,14 +37,15 @@ const PersonDetection = () => {
         videoRef.current.srcObject = stream;
       }
     } catch (err) {
-      console.error('カメ���の起動に失敗しました:', err);
+      console.error('カメラの起動に失敗しました:', err);
     }
   };
 
   const detectPerson = async () => {
     if (model && videoRef.current) {
       const predictions = await model.estimateFaces(videoRef.current, false);
-      setIsPersonPresent(predictions.length > 0);
+      const personDetected = predictions.length > 0;
+      setIsPersonPresent(personDetected);
     }
   };
 

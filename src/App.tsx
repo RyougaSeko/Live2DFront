@@ -4,21 +4,24 @@ import NewsStatus from './components/NewsStatus';
 import { Live2DProvider } from './contexts/Live2DContext';
 import './App.css';
 import PersonDetection from './components/PersonDetection';
+import { PersonDetectionProvider } from './contexts/PersonDetectionContext';
 
 function App() {
   return (
-    <Live2DProvider>
-      <div className="App">
+    <PersonDetectionProvider>
+      <Live2DProvider>
+        <div className="App">
           <NewsStatus />
-        <div className="left-container">
-          <Live2D />
+          <PersonDetection />
+          <div className="left-container">
+            <Live2D />
+          </div>
+          <div className="right-container">
+            <Chat />
+          </div>
         </div>
-        <div className="right-container">
-          <Chat />
-        </div>
-        <PersonDetection />
-      </div>
-    </Live2DProvider>
+      </Live2DProvider>
+    </PersonDetectionProvider>
   );
 }
 
