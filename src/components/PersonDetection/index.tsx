@@ -45,6 +45,10 @@ const PersonDetection = () => {
     if (model && videoRef.current) {
       const predictions = await model.estimateFaces(videoRef.current, false);
       const personDetected = predictions.length > 0;
+      console.log('人検出結果:', {
+        検出: personDetected,
+        検出数: predictions.length
+      });
       setIsPersonPresent(personDetected);
     }
   };

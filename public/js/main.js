@@ -24,11 +24,29 @@ async function initialize() {
         } catch (error) {
           console.error('音声再生に失敗しました:', error);
         }
-      } else if (event.data.type === 'SPEAK_WITH_AUDIO') {
+      } else if (event.data.type === 'SPEAK_NEWS') {
         try {
+          // 人が検出されている場合は再生しない
+          if (event.data.isPersonPresent === true) {
+            console.log('人が検出されているため、ニュースを再生しません');
+            return;
+          }
+
+          // ニュ���ス再生開始時にフラグを設定
+          controls.isPlayingNews = true;
           await controls.lipSync.startSpeaking(event.data.audioUrl);
+          // 正常に終了した場合のみフラグを解除
+          controls.isPlayingNews = false;
         } catch (error) {
           console.error('音声再生に失敗しました:', error);
+          // エラー時もフラグを解除
+          controls.isPlayingNews = false;
+        }
+      } else if (event.data.type === 'STOP_NEWS') {
+        if (controls.isPlayingNews) {
+          console.log('ニュースを停止します');
+          await controls.stopTalking();
+          controls.isPlayingNews = false;
         }
       }
     });

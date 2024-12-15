@@ -6,6 +6,7 @@ export class ModelControls {
     this.live2DModel = live2DModel;
     this.lipSync = new LipSync(live2DModel);
     this.ttsService = new TTSService();
+    this.isPlayingNews = false;
     
     // 初期位置の設定
     this.defaultYOffset = 400;
@@ -121,8 +122,24 @@ export class ModelControls {
     }
   }
 
-  stopTalking() {
-    this.lipSync.stop();
+  async stopTalking() {
+    if (this.live2DModel) {
+      console.log('リップシンクの停止');
+      // リップシンクの停止
+      await this.live2DModel.stopSpeaking();
+      
+      // 音声の停止
+      if (this.live2DModel.audio) {
+        await this.live2DModel.audio.pause();
+        this.live2DModel.audio.currentTime = 0;
+        this.live2DModel.audio = null;
+      }
+
+      // ニュース再生フラグをリセット
+      this.isPlayingNews = false;
+    } else {
+      console.error('Live2Dモデルが見つかりません');
+    }
   }
 
   // 話者を変更する機能を追加

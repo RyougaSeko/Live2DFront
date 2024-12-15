@@ -1,9 +1,8 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface PersonDetectionContextType {
   isPersonPresent: boolean;
   setIsPersonPresent: (present: boolean) => void;
-  shouldPlayNews: boolean;
 }
 
 interface PersonDetectionProviderProps {
@@ -15,13 +14,15 @@ const PersonDetectionContext = createContext<PersonDetectionContextType | null>(
 export const PersonDetectionProvider = ({ children }: PersonDetectionProviderProps) => {
   const [isPersonPresent, setIsPersonPresent] = useState(false);
 
-  const shouldPlayNews = !isPersonPresent;
+  // 人検出状態の変更を監視してログ出力
+  useEffect(() => {
+    console.log('人検出状態:', isPersonPresent ? '検出' : '未検出');
+  }, [isPersonPresent]);
 
   return (
     <PersonDetectionContext.Provider value={{ 
       isPersonPresent,
       setIsPersonPresent,
-      shouldPlayNews
     }}>
       {children}
     </PersonDetectionContext.Provider>

@@ -24,13 +24,33 @@ export const Live2DProvider = ({ children }: Live2DProviderProps) => {
   const [currentSpeaker, setCurrentSpeaker] = useState('female_tsukuyomi');
   const [nextNewsTime, setNextNewsTime] = useState<Date | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlayingNews, setIsPlayingNews] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const { shouldPlayNews } = usePersonDetection();
+  const { isPersonPresent } = usePersonDetection();
+
+  useEffect(() => {
+    if (isPersonPresent && isPlayingNews) {
+      console.log('人を検出したため、ニュースを停止します');
+      if (iframeRef.current?.contentWindow) {
+        console.log('ニュースを停止します');
+        iframeRef.current.contentWindow.postMessage({
+          type: 'STOP_NEWS'
+        }, '*');
+        setIsPlayingNews(false);
+        setIsPlaying(false);
+      }
+    }
+  }, [isPersonPresent, isPlayingNews]);
 
   useEffect(() => {
     const autoPlayNews = async () => {
-      if (!shouldPlayNews) {
+      if (isPersonPresent) {
         console.log('人が検出されているため、ニュースを再生しません');
+        return;
+      }
+
+      if (isPlaying) {
+        console.log('既にニュースを再生中です');
         return;
       }
 
@@ -47,16 +67,14 @@ export const Live2DProvider = ({ children }: Live2DProviderProps) => {
       }
     };
 
-    // 初回実行
-    if (shouldPlayNews) {
+    if (!isPersonPresent && !isPlaying) {
       autoPlayNews();
     }
 
-    // 3分ごとに実行
     const intervalId = setInterval(autoPlayNews, 3 * 60 * 1000);
 
     return () => clearInterval(intervalId);
-  }, [shouldPlayNews]);
+  }, [isPersonPresent, isPlaying]);
 
   const setIframeRef = (ref: HTMLIFrameElement | null) => {
     iframeRef.current = ref;
@@ -104,7 +122,7 @@ export const Live2DProvider = ({ children }: Live2DProviderProps) => {
         }, '*');
       }
     } catch (error) {
-      console.error('音声生成に失敗しました:', error);
+      console.error('音声��成に失敗しました:', error);
       throw error;
     }
   };
@@ -115,7 +133,17 @@ export const Live2DProvider = ({ children }: Live2DProviderProps) => {
 
   const playRandomNews = async () => {
     try {
-      // キャッシュを無効化するためにタイムスタンプをクエリパラメータとして追加
+      if (isPersonPresent) {
+        console.log('人が検出されているため、ニュースを再生しません');
+        return;
+      }
+
+      if (isPlayingNews) {
+        console.log('既にニュースを再生中です');
+        return;
+      }
+
+      setIsPlayingNews(true);
       const timestamp = new Date().getTime();
       const response = await fetch(
         `https://hironocho-api-d7b0dqgzcrc9e6du.japaneast-01.azurewebsites.net/random-news?t=${timestamp}`, 
@@ -142,13 +170,14 @@ export const Live2DProvider = ({ children }: Live2DProviderProps) => {
       }
 
       iframeRef.current.contentWindow.postMessage({
-        type: 'SPEAK_WITH_AUDIO',
+        type: 'SPEAK_NEWS',
         audioUrl,
-        text: 'ニュースを読み上げています'
+        isPersonPresent
       }, '*');
 
     } catch (error) {
-      console.error('ニュー���の再生に失敗しました:', error);
+      console.error('ニュースの再生に失敗しました:', error);
+      setIsPlayingNews(false);
       throw error;
     }
   };
