@@ -16,7 +16,8 @@ export class Live2DModel {
       resizeTo: window,
       antialias: true,
       autoDensity: true,
-      resolution: window.devicePixelRatio || 1
+      resolution: window.devicePixelRatio || 1,
+      backgroundAlpha: 0
     });
 
     await this.loadModel();
