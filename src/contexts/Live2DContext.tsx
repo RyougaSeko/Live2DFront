@@ -122,7 +122,7 @@ export const Live2DProvider = ({ children }: Live2DProviderProps) => {
         }, '*');
       }
     } catch (error) {
-      console.error('音声��成に失敗しました:', error);
+      console.error('音声再生に失敗しました:', error);
       throw error;
     }
   };
