@@ -3,6 +3,7 @@ import Chat from './components/Chat';
 import NewsStatus from './components/NewsStatus';
 import { Live2DProvider } from './contexts/Live2DContext';
 import './App.css';
+import PersonDetection from './components/PersonDetection';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <div className="right-container">
           <Chat />
         </div>
+        <PersonDetection />
       </div>
     </Live2DProvider>
   );
