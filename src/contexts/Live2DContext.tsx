@@ -109,12 +109,20 @@ export const Live2DProvider = ({ children }: Live2DProviderProps) => {
 
   const playRandomNews = async () => {
     try {
-      const response = await fetch('https://hironocho-api-d7b0dqgzcrc9e6du.japaneast-01.azurewebsites.net/random-news', {
-        method: 'GET',
-        headers: {
-          'Accept': 'audio/mp3'
+      // キャッシュを無効化するためにタイムスタンプをクエリパラメータとして追加
+      const timestamp = new Date().getTime();
+      const response = await fetch(
+        `https://hironocho-api-d7b0dqgzcrc9e6du.japaneast-01.azurewebsites.net/random-news?t=${timestamp}`, 
+        {
+          method: 'GET',
+          headers: {
+            'Accept': 'audio/mp3',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
         }
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
