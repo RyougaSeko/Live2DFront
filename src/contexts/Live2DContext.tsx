@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useRef, ReactNode } from 'react';
+import { createContext, useContext, useState, useRef, ReactNode, useEffect } from 'react';
 
 interface Live2DContextType {
   speak: (text: string) => Promise<void>;
@@ -6,6 +6,8 @@ interface Live2DContextType {
   currentSpeaker: string;
   playRandomNews: () => Promise<void>;
   setIframeRef: (ref: HTMLIFrameElement | null) => void;
+  nextNewsTime: Date | null;
+  isPlaying: boolean;
 }
 
 interface Live2DProviderProps {
@@ -19,7 +21,36 @@ const Live2DContext = createContext<Live2DContextType | null>(null);
 
 export const Live2DProvider = ({ children }: Live2DProviderProps) => {
   const [currentSpeaker, setCurrentSpeaker] = useState('female_tsukuyomi');
+  const [nextNewsTime, setNextNewsTime] = useState<Date | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+
+  // 3分ごとにニュースを読み上げる
+  useEffect(() => {
+    const autoPlayNews = async () => {
+      try {
+        setIsPlaying(true);
+        await playRandomNews();
+      } catch (error) {
+        console.error('自動ニュース再生に失敗しました:', error);
+      } finally {
+        setIsPlaying(false);
+        // 次の再生時刻を設定
+        const next = new Date();
+        next.setMinutes(next.getMinutes() + 3);
+        setNextNewsTime(next);
+      }
+    };
+
+    // 初回実行
+    autoPlayNews();
+
+    // 3分ごとに実行
+    const intervalId = setInterval(autoPlayNews, 3 * 60 * 1000);
+
+    // クリーンアップ
+    return () => clearInterval(intervalId);
+  }, []);
 
   const setIframeRef = (ref: HTMLIFrameElement | null) => {
     iframeRef.current = ref;
@@ -114,7 +145,9 @@ export const Live2DProvider = ({ children }: Live2DProviderProps) => {
       changeSpeaker, 
       currentSpeaker,
       playRandomNews,
-      setIframeRef
+      setIframeRef,
+      nextNewsTime,
+      isPlaying
     }}>
       {children}
     </Live2DContext.Provider>

@@ -4,7 +4,7 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background: #f0f0f0;  /* 背景色を追加 */
+  background: transparent;
 }
 
 body {
